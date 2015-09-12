@@ -1,12 +1,10 @@
 package dennis.dkaraoke.controller;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -34,13 +32,13 @@ public class MessageController {
 
 		if (songAction.getAction().equals(SongAction.ADD)) {
 			songQueue.add(songAction.getSongIndex());
-		} else if (songAction.getAction().equals(SongAction.REMOVE) &&
-				songQueue.contains(songAction.getSongIndex())) {
-				songQueue.remove(songAction.getSongIndex());
+		} else if (songAction.getAction().equals(SongAction.REMOVE) && songQueue.contains(songAction.getSongIndex())) {
+			songQueue.remove(songAction.getSongIndex());
 		}
 
-		// list of string song indexes is sent to the topic queue where all subscribers will receive
-		return songQueue.toArray(); 
+		// list of string song indexes is sent to the topic queue where all
+		// subscribers will receive
+		return songQueue.toArray();
 	}
 
 	@RequestMapping(value = "/getHostAddress", method = RequestMethod.GET)
@@ -52,4 +50,21 @@ public class MessageController {
 		return ip.getHostAddress();
 
 	}
+
+	@RequestMapping(value = "/getKaraokeDrive", method = RequestMethod.GET)
+	@ResponseBody
+	public String getKaraokeDrive() {
+		// search Karaoke drive location C > D > E
+		String[] drives = { "D", "E", "C", "F", "G" };
+
+		for (String drive : drives) {
+			File f = new File("/" + drive + ":/Karaoke");
+			if (f.exists()) {
+				return drive;
+			}
+		}
+
+		return "";
+	}
+
 }

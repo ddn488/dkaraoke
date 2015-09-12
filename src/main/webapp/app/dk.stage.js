@@ -3,8 +3,11 @@ var currentPlayIndex;
 var currentPlayFileName = '';
 var prevPlayFileName = '';
 var nextPlayFileName = '';
+var curSetTrack =1;
+var karaokeDrive='C'; // default
 
 function onload() {
+	
 	
 	// load songData js
 	var imported = document.createElement('script');
@@ -16,6 +19,11 @@ function onload() {
 	$.get("/dkaraoke/getHostAddress", function(ip, status){
 		document.getElementById("ipAddr").appendChild(document.createTextNode(ip + '/'));
 	  //  $("#ipAddr").appendChild(document.createTextNode(ip));
+	});
+	
+	// search Karaoke drive location  C > D > E > F > G
+	$.get("/dkaraoke/getKaraokeDrive", function(drive, status){
+		karaokeDrive =  drive;
 	});
 	
 	connect(); // stomp client connect to server
@@ -73,6 +81,8 @@ function trackToggle() {
 			vlc.audio.track = 1;
 		}
 	}
+	
+	curSetTrack = vlc.audio.track;
 }
 
 function requestFullScreen() {
@@ -100,8 +110,9 @@ function cancelFullScreen() {
 	}
 }
 function addFileNameToPlayList(fileName) {
-	var id = vlc.playlist.add("file:///C:/Karaoke/" + fileName);
-	// var id = vlc.playlist.add("file://KARAOKEPC/Karaoke/" + fileName );
+	
+	var id = vlc.playlist.add("file:///"+karaokeDrive+":/Karaoke/" + fileName);
+	
 	return id;
 }
 
@@ -143,7 +154,7 @@ function trim1(str) {
 }
 
 function extractSongIndex(fileName) {
-	return trim1(fileName.substring(0, 5));
+	return trim1(fileName.substring(0, fileName.indexOf(" ")));
 }
 
 function extractIndexTitleArtist(fileName) {
@@ -170,6 +181,7 @@ function play() {
 		}
 
 		songIndex.focus();
+		if (vlc.audio.track > 0) vlc.audio.track = curSetTrack; 
 		vlc.playlist.play();
 	} else {
 		alert("Queue is empty...");
@@ -178,10 +190,10 @@ function play() {
 
 function next() {
 	if (songQueue.length > 1) {
-		vlc.playlist.items.remove(0); 		// remove the current song just finish
+		vlc.playlist.items.remove(0);
+		// remove the current song just finish
 		var songIndexRemove = extractSongIndex(currentPlayFileName);
-		
-		// send the remove songIndex to the server
+//		// send the remove songIndex to the server
 		for (i = 0; i < songQueue.length; i++) {
 			if (currentPlayFileName
 					.localeCompare(extractIndexTitleArtist(songQueue[i])) == 0) {

@@ -10,10 +10,15 @@ function connect() {
 	
 	stompClient.connect({}, function(frame) {
 			
-		stompClient.subscribe('/topic/song', function(message) {
+		var subcritionId = stompClient.subscribe('/topic/song', function(message) {
 			updateSongQueue(JSON.parse(message.body));
-		});
+		});		
+				
 	});
+		
+	// send an empty string to get the current server queue content
+	//removeSongIndex("");
+
 }
 
 function disconnect() {
